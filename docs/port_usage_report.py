@@ -5,17 +5,18 @@ port_usage_report.py
 Version: 1.1.0
 
 Changelog:
-- 1.0.0: Initiale Version, JSON-Report + optionale HTML-Ansicht +
-         Laufzeit-TCP-Port-Check.
-- 1.1.0: Docker-Integration. Annotiert Ports, die zu Docker-Containern gehören,
-         mittels:
+- 1.0.0: Initial version, JSON report + optional HTML view +
+         runtime TCP port check.
+- 1.1.0: Docker integration. Annotates ports that belong to Docker containers
+         using:
          docker ps --format 'table {{.Names}}\t{{.ID}}\t{{.Image}}\t{{.Ports}}'
-- 1.1.1: Dokumentation und Validierung der Docker-Port-Mapping-Logik anhand der bestehenden Container-Landschaft (u. a. nextcloud-nginx, mosquitto); keine funktionalen Änderungen am Report-Format.
+- 1.1.1: Documentation and validation of the Docker port mapping logic based on
+         the existing container landscape (including nextcloud-nginx, mosquitto);
+         no functional changes to the report format.
 
 Credits:
-- Lernprojekt "Home Lab Infra Monitor".
+- learning project "Home Lab Infra Monitor".
 - Author: Jo Zapf (Homelab / Infra / Monitoring).
-- Support: ChatGPT (OpenAI) für Pair-Programming & Didaktik.
 """
 
 from __future__ import annotations
