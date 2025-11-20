@@ -2,7 +2,7 @@
 """
 port_usage_report.py
 
-Version: 1.1.1
+Version: 1.1.0
 
 Changelog:
 - 1.0.0: Initial version, JSON report + optional HTML view +
@@ -10,9 +10,6 @@ Changelog:
 - 1.1.0: Docker integration. Annotates ports that belong to Docker containers
          using:
          docker ps --format 'table {{.Names}}\t{{.ID}}\t{{.Image}}\t{{.Ports}}'
-- 1.1.1: Documentation and validation of the Docker port mapping logic based on
-         the existing container landscape (including nextcloud-nginx, mosquitto);
-         no functional changes to the report format.
 
 Credits:
 - learning project "Home Lab Infra Monitor".
