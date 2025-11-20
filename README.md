@@ -4,9 +4,9 @@
 ![Status](https://img.shields.io/badge/status-WIP-orange)
 
 # Home Lab Infra Monitor
-> ⚠️ **Work in progress:** APIs, services and docs are actively evolving. 
+> ⚠️ **Work in progress:** APIs, services and docs are actively evolving.  
 ---
-> Home Lab Infra Monitor is a FastAPI-based service for monitoring a distributed home lab via typed services and centralized, environment-based configuration. :contentReference[oaicite:0]{index=0}
+> Home Lab Infra Monitor is a FastAPI-based service for monitoring a distributed home lab via typed services and centralized, environment-based configuration.
 
 <p align="center">
   <img src="docs/architecture_multi-site_hardware-network_infra-monitor.svg" alt="Architecture Overview">
@@ -16,14 +16,18 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Current Architecture](#current-architecture)
-3. [Configuration](#configuration)
-4. [Implemented Features](#implemented-features)
-5. [Planned Features](#planned-features)
-6. [Development & Testing](#development--testing)
-7. [Folder Structure (planned)](#folder-structure-planned)
-8. [Port Usage Reporting (host & Docker ports)](#port-usage-reporting-host--docker-ports)
+1. [Overview](#overview)  
+2. [Current Architecture](#current-architecture)  
+3. [Configuration](#configuration)  
+4. [Implemented Features](#implemented-features)  
+   - 4.1 [FastAPI app](#fastapi-app)  
+   - 4.2 [Domain / service separation](#domain--service-separation)  
+   - 4.3 [Configuration layer](#configuration-layer)  
+   - 4.4 [Tests & CI](#tests--ci)  
+   - 4.5 [Port Usage Reporting (host & Docker ports)](#port-usage-reporting-host--docker-ports)  
+5. [Planned Features](#planned-features)  
+6. [Development & Testing](#development--testing)  
+7. [Folder Structure (planned)](#folder-structure-planned)  
 
 ---
 
@@ -62,7 +66,7 @@
 
 ## Configuration
 
-Configuration is driven entirely via environment variables,... typically provided through a local `.env` file (not committed).
+Configuration is driven entirely via environment variables, typically provided through a local `.env` file (not committed).
 
 Key variables (see `.env.example`):
 
@@ -80,28 +84,95 @@ Docker:
 
 ## Implemented Features
 
-- **FastAPI app**
-  - Health endpoint `/health/`.
-  - Host endpoint `/host/status` with clean layering (API → service → model).
-  - NVMe endpoint `/nvme/status` for temperature/critical state of configured NVMe devices.
-  - FritzBox endpoint `/fritz/status` for reachability and latency per configured host.
+### FastAPI app
 
-- **Domain / service separation**
-  - `HostStatus` model for host metrics.
-  - `NvmeDeviceStatus` model for NVMe device temperature/critical state.
-  - `FritzHostStatus` model for router/FritzBox reachability and latency.
-  - `host_monitor` service encapsulating system access.
-  - `nvme_monitor` service reading smart-log via nvme-cli for configured devices.
-  - `fritz_monitor` service handling ping-based reachability/latency checks.
+- Health endpoint `/health/`.
+- Host endpoint `/host/status` with clean layering (API → service → model).
+- NVMe endpoint `/nvme/status` for temperature/critical state of configured NVMe devices.
+- FritzBox endpoint `/fritz/status` for reachability and latency per configured host.
 
-- **Configuration layer**
-  - `app/config.py` with `Settings` + `get_settings()` (multi-router, NVMe devices, HA URL).
-  - `.env.example` as documented template.
-  - `.env` excluded via `.gitignore`.
+### Domain / service separation
 
-- **Tests & CI**
-  - `tests/test_health.py`, `tests/test_host.py`, `tests/test_nvme.py`, `tests/test_fritz.py`, `tests/test_config.py`.
-  - GitHub Actions workflow (`ci.yml`) runs `pytest` on push/PR to `main`.
+- `HostStatus` model for host metrics.
+- `NvmeDeviceStatus` model for NVMe device temperature/critical state.
+- `FritzHostStatus` model for router/FritzBox reachability and latency.
+- `host_monitor` service encapsulating system access.
+- `nvme_monitor` service reading smart-log via nvme-cli for configured devices.
+- `fritz_monitor` service handling ping-based reachability/latency checks.
+
+### Configuration layer
+
+- `app/config.py` with `Settings` + `get_settings()` (multi-router, NVMe devices, HA URL).
+- `.env.example` as documented template.
+- `.env` excluded via `.gitignore`.
+
+### Tests & CI
+
+- `tests/test_health.py`, `tests/test_host.py`, `tests/test_nvme.py`, `tests/test_fritz.py`, `tests/test_config.py`.
+- GitHub Actions workflow (`ci.yml`) runs `pytest` on push/PR to `main`.
+
+### Port Usage Reporting (host & Docker ports)
+
+> 🔌 **Status:** implemented as standalone offline tooling; not yet wired into the FastAPI app or CI.
+
+The project includes an experimental **host port usage reporting** helper to document and validate port usage before exposing new services:
+
+- **Script:** `docs/port_usage_report.py`
+- **Sample outputs:**
+  - `docs/port_usage_report.sample.json` – anonymized JSON report
+  - `docs/port_usage_report.sample.html` – anonymized rendered HTML view
+
+Current behavior:
+
+- Collects **LISTEN** ports on the host via `psutil.net_connections(kind="inet")`.
+- Resolves for each listener (where possible):
+  - protocol (`tcp` / `udp`)
+  - IP + port
+  - process ID, process name, user and command line.
+- Integrates **Docker-published ports** by parsing:
+
+  ```bash
+  docker ps --format '{{.Names}}	{{.ID}}	{{.Image}}	{{.Ports}}'
+  ```
+
+  and mapping host ports like `0.0.0.0:8080->80/tcp` to:
+
+  - `docker_container_name`
+  - `docker_container_id`
+  - `docker_image`
+  - `docker_port_spec` (original mapping string)
+  - `docker_container_port` (internal container port)
+
+- Writes a JSON report (canonical format):
+
+  - default path: `docs/port_usage_report.json`
+  - includes metadata (`host`, `generated_at`, `ip_local_port_range`, `docker` meta, `schema_version`).
+
+- Optionally generates a **human-friendly HTML** view:
+
+  - default path: `docs/port_usage_report.html`
+  - renders the JSON report in a table (host + Docker columns) for manual inspection.
+
+Typical usage:
+
+```bash
+cd docs
+
+# JSON report only
+./port_usage_report.py
+
+# JSON + HTML
+./port_usage_report.py --html
+
+# Runtime check: verify that a port is free (e.g. planned FastAPI port)
+./port_usage_report.py --check-port 8000
+```
+
+Planned integration steps:
+
+- Optional FastAPI endpoint (e.g. `/host/ports`) consuming the same logic.
+- CI checks that fail if certain ports are already bound on a target environment.
+- Extended docs in `docs/` on port allocation strategy across the home lab.
 
 ---
 
@@ -139,44 +210,45 @@ uvicorn app.main:app --reload
 
 # run tests
 pytest
-
 ```
 
+---
 
-## Folder Structure
-```
+## Folder Structure (planned)
+
+```text
 home-lab-infra-monitor/
 ├─ app/
-│ ├─ init.py
-│ ├─ main.py # FastAPI app & router registration
-│ ├─ config.py # Settings + get_settings()
+│ ├─ __init__.py
+│ ├─ main.py                  # FastAPI app & router registration
+│ ├─ config.py                # Settings + get_settings()
 │ ├─ api/
-│ │ ├─ init.py
-│ │ ├─ health.py # /health/
-│ │ ├─ host.py # /host/status
-│ │ ├─ nvme.py # /nvme/status
-│ │ ├─ fritz.py # /fritz/status
-│ │ └─ home_assistant.py # (planned) /ha/status
+│ │ ├─ __init__.py
+│ │ ├─ health.py              # /health/
+│ │ ├─ host.py                # /host/status
+│ │ ├─ nvme.py                # /nvme/status
+│ │ ├─ fritz.py               # /fritz/status
+│ │ └─ home_assistant.py      # (planned) /ha/status
 │ ├─ services/
-│ │ ├─ host_monitor.py # host metrics (psutil, socket, time)
-│ │ ├─ nvme_monitor.py # nvme smart-log + error handling
-│ │ ├─ fritz_monitor.py # ping-based reachability/latency
-│ │ └─ ha_monitor.py # (planned) HA status
+│ │ ├─ host_monitor.py        # host metrics (psutil, socket, time)
+│ │ ├─ nvme_monitor.py        # nvme smart-log + error handling
+│ │ ├─ fritz_monitor.py       # ping-based reachability/latency
+│ │ └─ ha_monitor.py          # (planned) HA status
 │ └─ models/
-│ ├─ host.py # HostStatus
-│ ├─ nvme.py # NvmeDeviceStatus
-│ ├─ fritz.py # FritzHostStatus
-│ └─ home_assistant.py # (planned)
+│    ├─ host.py               # HostStatus
+│    ├─ nvme.py               # NvmeDeviceStatus
+│    ├─ fritz.py              # FritzHostStatus
+│    └─ home_assistant.py     # (planned)
 ├─ tests/
 │ ├─ test_health.py
 │ ├─ test_host.py
 │ ├─ test_nvme.py
 │ ├─ test_fritz.py
 │ └─ test_config.py
-├─ docs/ # Runbooks, PlantUML diagrams, architecture notes
+├─ docs/                      # Runbooks, PlantUML diagrams, architecture notes
 ├─ .github/
 │ └─ workflows/
-│ └─ ci.yml # CI pipeline (pytest)
+│    └─ ci.yml                # CI pipeline (pytest)
 ├─ .env.example
 ├─ Dockerfile
 ├─ docker-compose.yml
