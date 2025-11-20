@@ -23,6 +23,11 @@ idea/
 __pycache__/
 *.pyc
 
+*.swp
+*.swo
+*.swn
+
+
 .env
 .venv/
 

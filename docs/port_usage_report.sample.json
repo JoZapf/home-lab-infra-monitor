@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.1.0",
+  "script_version": "1.1.1",
+  "host": "sample-host",
+  "generated_at": "2025-01-01T12:00:00+00:00",
+  "ip_local_port_range": {
+    "low": 32768,
+    "high": 60999
+  },
+  "docker": {
+    "available": true,
+    "error": null,
+    "containers_total": 4,
+    "containers_with_published_ports": 3,
+    "command": "docker ps --format '{{.Names}}\\t{{.ID}}\\t{{.Image}}\\t{{.Ports}}'"
+  },
+  "ports": [
+    {
+      "proto": "tcp",
+      "ip": "0.0.0.0",
+      "port": 22,
+      "status": "LISTEN",
+      "pid": 101,
+      "user": "serviceuser",
+      "process": "sshd",
+      "cmdline": "/usr/sbin/sshd -D"
+    },
+    {
+      "proto": "tcp",
+      "ip": "::",
+      "port": 22,
+      "status": "LISTEN",
+      "pid": 101,
+      "user": "serviceuser",
+      "process": "sshd",
+      "cmdline": "/usr/sbin/sshd -D"
+    },
+    {
+      "proto": "tcp",
+      "ip": "127.0.0.1",
+      "port": 5432,
+      "status": "LISTEN",
+      "pid": 202,
+      "user": "dbuser",
+      "process": "postgres",
+      "cmdline": "/usr/lib/postgresql/15/bin/postgres -D /var/lib/postgresql/15/main"
+    },
+    {
+      "proto": "tcp",
+      "ip": "10.0.0.10",
+      "port": 80,
+      "status": "LISTEN",
+      "pid": 303,
+      "user": "webuser",
+      "process": "nginx",
+      "cmdline": "nginx: master process /usr/sbin/nginx -g daemon off;"
+    },
+    {
+      "proto": "tcp",
+      "ip": "0.0.0.0",
+      "port": 1883,
+      "status": "LISTEN",
+      "pid": null,
+      "user": null,
+      "process": null,
+      "cmdline": null,
+      "docker_container_name": "mqtt_broker",
+      "docker_container_id": "aaaaaaaaaaaa",
+      "docker_image": "eclipse-mosquitto:2",
+      "docker_port_spec": "0.0.0.0:1883->1883/tcp",
+      "docker_container_port": 1883
+    },
+    {
+      "proto": "tcp",
+      "ip": "::",
+      "port": 1883,
+      "status": "LISTEN",
+      "pid": null,
+      "user": null,
+      "process": null,
+      "cmdline": null,
+      "docker_container_name": "mqtt_broker",
+      "docker_container_id": "aaaaaaaaaaaa",
+      "docker_image": "eclipse-mosquitto:2",
+      "docker_port_spec": "[::]:1883->1883/tcp",
+      "docker_container_port": 1883
+    },
+    {
+      "proto": "tcp",
+      "ip": "0.0.0.0",
+      "port": 8080,
+      "status": "LISTEN",
+      "pid": null,
+      "user": null,
+      "process": null,
+      "cmdline": null,
+      "docker_container_name": "web_app",
+      "docker_container_id": "bbbbbbbbbbbb",
+      "docker_image": "sample/web-app:1.0",
+      "docker_port_spec": "0.0.0.0:8080->80/tcp",
+      "docker_container_port": 80
+    },
+    {
+      "proto": "tcp",
+      "ip": "::",
+      "port": 8080,
+      "status": "LISTEN",
+      "pid": null,
+      "user": null,
+      "process": null,
+      "cmdline": null,
+      "docker_container_name": "web_app",
+      "docker_container_id": "bbbbbbbbbbbb",
+      "docker_image": "sample/web-app:1.0",
+      "docker_port_spec": "[::]:8080->80/tcp",
+      "docker_container_port": 80
+    },
+    {
+      "proto": "tcp",
+      "ip": "10.0.0.10",
+      "port": 9000,
+      "status": "LISTEN",
+      "pid": 404,
+      "user": "appuser",
+      "process": "sample-api",
+      "cmdline": "/opt/sample/bin/sample-api --port=9000"
+    },
+    {
+      "proto": "tcp",
+      "ip": "10.0.0.20",
+      "port": 9443,
+      "status": "LISTEN",
+      "pid": 505,
+      "user": "admin",
+      "process": "reverse-proxy",
+      "cmdline": "/usr/bin/revproxy --listen 9443 --target http://10.0.0.10:9000"
+    }
+  ]
+}

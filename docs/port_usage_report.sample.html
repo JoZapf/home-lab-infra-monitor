@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Port Usage Report – sample-host</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 1.5rem;
+            background: #f5f5f5;
+        }
+        h1, h2 {
+            margin-bottom: 0.25rem;
+        }
+        .meta {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: #fff;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        th {
+            background: #eee;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        tr:nth-child(even) td {
+            background: #fafafa;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+        }
+        .status {
+            text-transform: lowercase;
+        }
+    </style>
+</head>
+<body>
+    <h1>Port Usage Report</h1>
+    <div class="meta">
+        <div><strong>Host:</strong> <code id="meta-host"></code></div>
+        <div><strong>Erzeugt am:</strong> <span id="meta-generated"></span></div>
+        <div><strong>Script-Version:</strong> <span id="meta-version"></span></div>
+        <div><strong>Anzahl Ports (LISTEN):</strong> <span id="meta-count"></span></div>
+        <div><strong>Ephemeral-Range (falls ermittelt):</strong> <span id="meta-range"></span></div>
+        <div><strong>Docker-Integration:</strong> <span id="meta-docker"></span></div>
+    </div>
+
+    <h2>Ports</h2>
+    <table id="ports-table">
+        <thead>
+            <tr>
+                <th>Proto</th>
+                <th>IP</th>
+                <th>Port</th>
+                <th>Status</th>
+                <th>PID</th>
+                <th>User</th>
+                <th>Process</th>
+                <th>Cmdline</th>
+                <th>Docker Name</th>
+                <th>Docker ID</th>
+                <th>Docker Image</th>
+                <th>Docker Mapping</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const report = {"schema_version": "1.1.0", "script_version": "1.1.1", "host": "sample-host", "generated_at": "2025-01-01T12:00:00+00:00", "ip_local_port_range": {"low": 32768, "high": 60999}, "docker": {"available": true, "error": null, "containers_total": 4, "containers_with_published_ports": 3, "command": "docker ps --format '{{.Names}}\\t{{.ID}}\\t{{.Image}}\\t{{.Ports}}'"}, "ports": [{"proto": "tcp", "ip": "0.0.0.0", "port": 22, "status": "LISTEN", "pid": 101, "user": "serviceuser", "process": "sshd", "cmdline": "/usr/sbin/sshd -D"}, {"proto": "tcp", "ip": "::", "port": 22, "status": "LISTEN", "pid": 101, "user": "serviceuser", "process": "sshd", "cmdline": "/usr/sbin/sshd -D"}, {"proto": "tcp", "ip": "127.0.0.1", "port": 5432, "status": "LISTEN", "pid": 202, "user": "dbuser", "process": "postgres", "cmdline": "/usr/lib/postgresql/15/bin/postgres -D /var/lib/postgresql/15/main"}, {"proto": "tcp", "ip": "10.0.0.10", "port": 80, "status": "LISTEN", "pid": 303, "user": "webuser", "process": "nginx", "cmdline": "nginx: master process /usr/sbin/nginx -g daemon off;"}, {"proto": "tcp", "ip": "0.0.0.0", "port": 1883, "status": "LISTEN", "pid": null, "user": null, "process": null, "cmdline": null, "docker_container_name": "mqtt_broker", "docker_container_id": "aaaaaaaaaaaa", "docker_image": "eclipse-mosquitto:2", "docker_port_spec": "0.0.0.0:1883->1883/tcp", "docker_container_port": 1883}, {"proto": "tcp", "ip": "::", "port": 1883, "status": "LISTEN", "pid": null, "user": null, "process": null, "cmdline": null, "docker_container_name": "mqtt_broker", "docker_container_id": "aaaaaaaaaaaa", "docker_image": "eclipse-mosquitto:2", "docker_port_spec": "[::]:1883->1883/tcp", "docker_container_port": 1883}, {"proto": "tcp", "ip": "0.0.0.0", "port": 8080, "status": "LISTEN", "pid": null, "user": null, "process": null, "cmdline": null, "docker_container_name": "web_app", "docker_container_id": "bbbbbbbbbbbb", "docker_image": "sample/web-app:1.0", "docker_port_spec": "0.0.0.0:8080->80/tcp", "docker_container_port": 80}, {"proto": "tcp", "ip": "::", "port": 8080, "status": "LISTEN", "pid": null, "user": null, "process": null, "cmdline": null, "docker_container_name": "web_app", "docker_container_id": "bbbbbbbbbbbb", "docker_image": "sample/web-app:1.0", "docker_port_spec": "[::]:8080->80/tcp", "docker_container_port": 80}, {"proto": "tcp", "ip": "10.0.0.10", "port": 9000, "status": "LISTEN", "pid": 404, "user": "appuser", "process": "sample-api", "cmdline": "/opt/sample/bin/sample-api --port=9000"}, {"proto": "tcp", "ip": "10.0.0.20", "port": 9443, "status": "LISTEN", "pid": 505, "user": "admin", "process": "reverse-proxy", "cmdline": "/usr/bin/revproxy --listen 9443 --target http://10.0.0.10:9000"}]};
+
+        function renderReport() {
+            const host = report.host || "";
+            const generated = report.generated_at || "";
+            const ports = Array.isArray(report.ports) ? report.ports : [];
+            const version = report.script_version || "";
+
+            const range = report.ip_local_port_range;
+            const rangeText = range && typeof range.low === "number" && typeof range.high === "number"
+                ? range.low + " - " + range.high
+                : "unbekannt";
+
+            const docker = report.docker || {};
+            const dockerAvailable = docker.available === true;
+            const dockerText = dockerAvailable
+                ? "aktiv (Container gesamt: " + (docker.containers_total || 0) +
+                  ", mit veröffentlichten Ports: " + (docker.containers_with_published_ports || 0) + ")"
+                : (docker.error ? "inaktiv – " + docker.error : "inaktiv");
+
+            document.getElementById("meta-host").textContent = host;
+            document.getElementById("meta-generated").textContent = generated;
+            document.getElementById("meta-count").textContent = String(ports.length);
+            document.getElementById("meta-range").textContent = rangeText;
+            document.getElementById("meta-version").textContent = version;
+            document.getElementById("meta-docker").textContent = dockerText;
+
+            const tbody = document.querySelector("#ports-table tbody");
+            tbody.innerHTML = "";
+
+            for (const p of ports) {
+                const tr = document.createElement("tr");
+
+                const cells = [
+                    p.proto || "",
+                    p.ip || "",
+                    p.port != null ? String(p.port) : "",
+                    p.status || "",
+                    p.pid != null ? String(p.pid) : "",
+                    p.user || "",
+                    p.process || "",
+                    p.cmdline || "",
+                    p.docker_container_name || "",
+                    p.docker_container_id || "",
+                    p.docker_image || "",
+                    p.docker_port_spec || "",
+                ];
+
+                cells.forEach((value, idx) => {
+                    const td = document.createElement("td");
+                    if (idx === 3) {
+                        td.className = "status";
+                    }
+                    if (idx === 0 || idx === 1 || idx === 2 || idx === 4 || idx === 9) {
+                        const code = document.createElement("code");
+                        code.textContent = value;
+                        td.appendChild(code);
+                    } else {
+                        td.textContent = value;
+                    }
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", renderReport);
+    </script>
+</body>
+</html>
