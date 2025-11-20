@@ -2,7 +2,7 @@
 """
 port_usage_report.py
 
-Version: 1.1.0
+Version: 1.1.1
 
 Changelog:
 - 1.0.0: Initial version, JSON report + optional HTML view +
