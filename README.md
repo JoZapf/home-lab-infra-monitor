@@ -140,10 +140,11 @@ uvicorn app.main:app --reload
 # run tests
 pytest
 
+```
 
 
 ## Folder Structure
-```text
+```
 home-lab-infra-monitor/
 ├─ app/
 │ ├─ init.py
@@ -181,4 +182,4 @@ home-lab-infra-monitor/
 ├─ docker-compose.yml
 ├─ requirements.txt or pyproject.toml
 └─ README.md
-
+```
