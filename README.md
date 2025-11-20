@@ -12,6 +12,7 @@
   <img src="docs/architecture_multi-site_hardware-network_infra-monitor.svg" alt="Architecture Overview">
 </p>
 
+## Latest:
 > 🔌 **Port usage reporting (host & Docker ports):** experimental offline tooling is available, see [Port Usage Reporting (host & Docker ports)](#port-usage-reporting-host--docker-ports).
 
 ## Table of Contents
