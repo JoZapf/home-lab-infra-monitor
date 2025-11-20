@@ -6,11 +6,13 @@
 # Home Lab Infra Monitor
 > ⚠️ **Work in progress:** APIs, services and docs are actively evolving. 
 ---
-> Home Lab Infra Monitor is a FastAPI-based service for monitoring a distributed home lab via typed services and centralized, environment-based configuration.
+> Home Lab Infra Monitor is a FastAPI-based service for monitoring a distributed home lab via typed services and centralized, environment-based configuration. :contentReference[oaicite:0]{index=0}
 
 <p align="center">
   <img src="docs/architecture_multi-site_hardware-network_infra-monitor.svg" alt="Architecture Overview">
 </p>
+
+> 🔌 **Port usage reporting (host & Docker ports):** experimental offline tooling is available, see [Port Usage Reporting (host & Docker ports)](#port-usage-reporting-host--docker-ports).
 
 ## Table of Contents
 
@@ -21,6 +23,7 @@
 5. [Planned Features](#planned-features)
 6. [Development & Testing](#development--testing)
 7. [Folder Structure (planned)](#folder-structure-planned)
+8. [Port Usage Reporting (host & Docker ports)](#port-usage-reporting-host--docker-ports)
 
 ---
 
@@ -138,54 +141,41 @@ uvicorn app.main:app --reload
 pytest
 
 
-## Development & Testing
 
-Local dev workflow:
-
-```bash
-# activate venv
-source .venv/bin/activate
-
-# run FastAPI app (dev)
-uvicorn app.main:app --reload
-
-# run tests
-pytest
-
-
-**Folder Structure**
+## Folder Structure
+```text
 home-lab-infra-monitor/
 ├─ app/
-│  ├─ __init__.py
-│  ├─ main.py                  # FastAPI app & router registration
-│  ├─ config.py                # Settings + get_settings()
-│  ├─ api/
-│  │  ├─ __init__.py
-│  │  ├─ health.py             # /health/
-│  │  ├─ host.py               # /host/status
-│  │  ├─ nvme.py               # /nvme/status
-│  │  ├─ fritz.py              # /fritz/status
-│  │  └─ home_assistant.py     # (planned) /ha/status
-│  ├─ services/
-│  │  ├─ host_monitor.py       # host metrics (psutil, socket, time)
-│  │  ├─ nvme_monitor.py       # nvme smart-log + error handling
-│  │  ├─ fritz_monitor.py      # ping-based reachability/latency
-│  │  └─ ha_monitor.py         # (planned) HA status
-│  └─ models/
-│     ├─ host.py               # HostStatus
-│     ├─ nvme.py               # NvmeDeviceStatus
-│     ├─ fritz.py              # FritzHostStatus
-│     └─ home_assistant.py     # (planned)
+│ ├─ init.py
+│ ├─ main.py # FastAPI app & router registration
+│ ├─ config.py # Settings + get_settings()
+│ ├─ api/
+│ │ ├─ init.py
+│ │ ├─ health.py # /health/
+│ │ ├─ host.py # /host/status
+│ │ ├─ nvme.py # /nvme/status
+│ │ ├─ fritz.py # /fritz/status
+│ │ └─ home_assistant.py # (planned) /ha/status
+│ ├─ services/
+│ │ ├─ host_monitor.py # host metrics (psutil, socket, time)
+│ │ ├─ nvme_monitor.py # nvme smart-log + error handling
+│ │ ├─ fritz_monitor.py # ping-based reachability/latency
+│ │ └─ ha_monitor.py # (planned) HA status
+│ └─ models/
+│ ├─ host.py # HostStatus
+│ ├─ nvme.py # NvmeDeviceStatus
+│ ├─ fritz.py # FritzHostStatus
+│ └─ home_assistant.py # (planned)
 ├─ tests/
-│  ├─ test_health.py
-│  ├─ test_host.py
-│  ├─ test_nvme.py
-│  ├─ test_fritz.py
-│  └─ test_config.py
-├─ docs/                       # Runbooks, PlantUML diagrams, architecture notes
+│ ├─ test_health.py
+│ ├─ test_host.py
+│ ├─ test_nvme.py
+│ ├─ test_fritz.py
+│ └─ test_config.py
+├─ docs/ # Runbooks, PlantUML diagrams, architecture notes
 ├─ .github/
-│  └─ workflows/
-│     └─ ci.yml                # CI pipeline (pytest)
+│ └─ workflows/
+│ └─ ci.yml # CI pipeline (pytest)
 ├─ .env.example
 ├─ Dockerfile
 ├─ docker-compose.yml
